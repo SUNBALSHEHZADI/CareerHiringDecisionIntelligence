@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { Upload, FileText, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
 import { evaluateReadiness } from "@/lib/mockAI";
 import { saveEvaluation } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
@@ -51,23 +51,32 @@ const Evaluate = () => {
 
     setCvFileName(file.name);
 
-    // For demo purposes, we'll extract text from the file
     if (file.name.endsWith(".txt")) {
       const text = await file.text();
       setCvText(text);
     } else {
-      // For PDF, we'll use a placeholder since we can't parse PDFs client-side without a library
-      // In production, this would use a PDF parser
+      // For PDF, we'll use placeholder since client-side PDF parsing needs backend
       setCvText(`[CV Content from ${file.name}]
         
-Skills: JavaScript, TypeScript, React, Node.js, Python, SQL, Git
-Education: B.S. Computer Science
-Experience: 2 internships, multiple projects
-Projects: Full-stack web applications, REST APIs, Database design`);
+SKILLS
+Python, FastAPI, REST APIs, SQL, Git
+
+EXPERIENCE
+Software Developer Intern at TechCorp
+- Built REST APIs using FastAPI and Python
+- Worked with PostgreSQL databases
+
+PROJECTS
+E-commerce Backend
+- Developed a full REST API using Python and FastAPI
+- Implemented user authentication and payment integration
+
+CERTIFICATIONS
+AWS Cloud Practitioner`);
       
       toast({
         title: "CV uploaded",
-        description: "For demo purposes, sample CV data has been loaded. In production, your actual PDF would be parsed.",
+        description: "For demo, sample CV data loaded. In production, your PDF will be parsed.",
       });
     }
   };
@@ -99,16 +108,22 @@ Projects: Full-stack web applications, REST APIs, Database design`);
 
     setIsLoading(true);
 
-    // Simulate AI processing time
+    // Simulate AI processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     try {
-      const result = evaluateReadiness(cvText, jobDescription);
+      const result = evaluateReadiness(cvText, jobDescription, "student");
       saveEvaluation(result);
+
+      const decisionText = result.decision === "APPLY" 
+        ? "APPLY" 
+        : result.decision === "BORDERLINE" 
+        ? "BORDERLINE" 
+        : "DO NOT APPLY";
 
       toast({
         title: "Evaluation complete!",
-        description: `Decision: ${result.decision} (${result.readinessScore}% readiness)`,
+        description: `Decision: ${decisionText} (${result.readinessScore}% readiness)`,
       });
 
       navigate(`/result/${result.id}`, { state: { result } });
@@ -138,11 +153,14 @@ Projects: Full-stack web applications, REST APIs, Database design`);
             className="max-w-4xl mx-auto"
           >
             <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                Student Mode
+              </div>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Evaluate Your Readiness
               </h1>
               <p className="text-lg text-muted-foreground">
-                Upload your CV and paste the job description to get your decision
+                Upload your CV and paste the job description. We extract skills with evidence — no guessing.
               </p>
             </div>
 
@@ -159,7 +177,7 @@ Projects: Full-stack web applications, REST APIs, Database design`);
                       <FileText className="h-5 w-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-foreground">Your CV</h2>
+                      <h2 className="text-lg font-semibold text-foreground">Your Resume</h2>
                       <p className="text-sm text-muted-foreground">Upload PDF or paste text</p>
                     </div>
                   </div>
@@ -184,11 +202,14 @@ Projects: Full-stack web applications, REST APIs, Database design`);
                     />
                     <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
                     {cvFileName ? (
-                      <p className="text-sm font-medium text-foreground">{cvFileName}</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                        <p className="text-sm font-medium text-foreground">{cvFileName}</p>
+                      </div>
                     ) : (
                       <>
                         <p className="text-sm font-medium text-foreground mb-1">
-                          Drop your CV here
+                          Drop your resume here
                         </p>
                         <p className="text-xs text-muted-foreground">PDF or TXT format</p>
                       </>
@@ -205,7 +226,13 @@ Projects: Full-stack web applications, REST APIs, Database design`);
                   </div>
 
                   <Textarea
-                    placeholder="Paste your resume content here..."
+                    placeholder="Paste your resume content here...
+
+Include:
+• Skills section
+• Work experience
+• Projects
+• Certifications"
                     value={cvText}
                     onChange={(e) => {
                       setCvText(e.target.value);
@@ -237,12 +264,17 @@ Projects: Full-stack web applications, REST APIs, Database design`);
                     placeholder="Paste the job description here...
 
 Example:
-We're looking for a Software Engineer to join our team. 
+Software Engineer - TechCorp
+
 Requirements:
-- 1-2 years of experience with React and TypeScript
-- Familiarity with REST APIs and databases
+- 2+ years experience with JavaScript and React
+- Proficiency in Python and REST APIs
+- Experience with SQL databases
 - Strong problem-solving skills
-- CS degree or equivalent"
+
+Preferred:
+- AWS experience
+- Docker and CI/CD knowledge"
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                     className="min-h-[350px] resize-none"
@@ -250,6 +282,34 @@ Requirements:
                 </div>
               </motion.div>
             </div>
+
+            {/* What Happens Next */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="mt-8 p-6 bg-card rounded-2xl border border-border"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-4">What happens next?</h3>
+              <div className="grid sm:grid-cols-4 gap-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                  <p className="text-muted-foreground">Extract skills from your resume with evidence</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
+                  <p className="text-muted-foreground">Extract required & preferred skills from JD</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">3</span>
+                  <p className="text-muted-foreground">Show skill diff: Matched / Missing / Extra</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">4</span>
+                  <p className="text-muted-foreground">Calculate readiness score & decision</p>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Action Button */}
             <motion.div
@@ -261,7 +321,7 @@ Requirements:
               {!isFormValid && (
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
                   <AlertCircle className="h-4 w-4" />
-                  <span className="text-sm">Both CV and job description are required</span>
+                  <span className="text-sm">Both resume and job description are required</span>
                 </div>
               )}
 
