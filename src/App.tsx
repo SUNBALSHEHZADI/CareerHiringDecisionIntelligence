@@ -8,6 +8,7 @@ import Evaluate from "./pages/Evaluate";
 import Result from "./pages/Result";
 import Interview from "./pages/Interview";
 import Analytics from "./pages/Analytics";
+import HRDashboard from "./pages/HRDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,7 +25,7 @@ const App = () => (
           <Route path="/result/:id" element={<Result />} />
           <Route path="/interview/:id" element={<Interview />} />
           <Route path="/analytics" element={<Analytics />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/hr/dashboard" element={<HRDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
