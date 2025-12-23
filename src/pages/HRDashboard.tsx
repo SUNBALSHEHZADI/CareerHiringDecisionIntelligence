@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,18 +9,19 @@ import {
   Plus, 
   Users, 
   FileText, 
-  Upload, 
   Loader2,
   CheckCircle2,
   XCircle,
   ArrowRight,
-  BarChart3
+  BarChart3,
+  Trash2
 } from "lucide-react";
 import { evaluateReadiness } from "@/lib/mockAI";
 import { saveEvaluation } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { EvaluationResult } from "@/types/evaluation";
 import { Link } from "react-router-dom";
+import { ResumeUpload } from "@/components/ResumeUpload";
 
 const HRDashboard = () => {
   const { toast } = useToast();
@@ -31,17 +32,35 @@ const HRDashboard = () => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [step, setStep] = useState<"job" | "candidates" | "results">("job");
 
-  const handleAddCandidate = () => {
-    setCandidateResumes([...candidateResumes, { name: `Candidate ${candidateResumes.length + 1}`, text: "" }]);
-  };
+  const handleAddCandidate = useCallback(() => {
+    setCandidateResumes(prev => [...prev, { name: `Candidate ${prev.length + 1}`, text: "" }]);
+  }, []);
 
-  const handleCandidateChange = (index: number, field: "name" | "text", value: string) => {
-    const updated = [...candidateResumes];
-    updated[index][field] = value;
-    setCandidateResumes(updated);
-  };
+  const handleRemoveCandidate = useCallback((index: number) => {
+    setCandidateResumes(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
-  const handleEvaluateAll = async () => {
+  const handleCandidateChange = useCallback((index: number, field: "name" | "text", value: string) => {
+    setCandidateResumes(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  }, []);
+
+  const handleResumeUpload = useCallback((index: number, text: string, fileName: string) => {
+    setCandidateResumes(prev => {
+      const updated = [...prev];
+      updated[index] = { 
+        ...updated[index], 
+        text: updated[index].text ? updated[index].text + "\n\n" + text : text,
+        name: fileName ? fileName.replace(/\.[^/.]+$/, "") : updated[index].name
+      };
+      return updated;
+    });
+  }, []);
+
+  const handleEvaluateAll = useCallback(async () => {
     if (!jobDescription.trim() || candidateResumes.length === 0) {
       toast({ title: "Missing data", description: "Add job description and at least one candidate", variant: "destructive" });
       return;
@@ -63,7 +82,7 @@ const HRDashboard = () => {
     setIsEvaluating(false);
     setStep("results");
     toast({ title: "Evaluation complete!", description: `Evaluated ${results.length} candidates` });
-  };
+  }, [jobDescription, candidateResumes, toast]);
 
   return (
     <div className="min-h-screen flex flex-col gradient-subtle">
@@ -95,19 +114,46 @@ const HRDashboard = () => {
             {step === "candidates" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-2xl border border-border p-8">
                 <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
-                  <Users className="h-5 w-5 text-accent" /> Step 2: Add Candidate Resumes
+                  <Users className="h-5 w-5 text-accent-foreground" /> Step 2: Add Candidate Resumes
                 </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Upload resume files or paste text directly. Skills are extracted with evidence only.
+                </p>
                 <div className="space-y-4 mb-6">
                   {candidateResumes.map((candidate, index) => (
                     <div key={index} className="p-4 rounded-xl bg-secondary/50 border border-border">
-                      <Input placeholder="Candidate Name" value={candidate.name} onChange={(e) => handleCandidateChange(index, "name", e.target.value)} className="mb-2" />
-                      <Textarea placeholder="Paste resume text..." value={candidate.text} onChange={(e) => handleCandidateChange(index, "text", e.target.value)} className="min-h-[120px]" />
+                      <div className="flex items-center gap-2 mb-3">
+                        <Input 
+                          placeholder="Candidate Name" 
+                          value={candidate.name} 
+                          onChange={(e) => handleCandidateChange(index, "name", e.target.value)} 
+                          className="flex-1"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleRemoveCandidate(index)}
+                          className="text-danger hover:text-danger hover:bg-danger/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <ResumeUpload 
+                        onTextExtracted={(text, fileName) => handleResumeUpload(index, text, fileName)}
+                        disabled={isEvaluating}
+                      />
+                      <Textarea 
+                        placeholder="Or paste resume text here..." 
+                        value={candidate.text} 
+                        onChange={(e) => handleCandidateChange(index, "text", e.target.value)} 
+                        className="min-h-[120px] mt-3" 
+                      />
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <Button variant="outline" onClick={handleAddCandidate}><Plus className="h-4 w-4" /> Add Candidate</Button>
-                  <Button variant="hero" onClick={handleEvaluateAll} disabled={isEvaluating || candidateResumes.length === 0}>
+                  <Button variant="hero" onClick={handleEvaluateAll} disabled={isEvaluating || candidateResumes.length === 0 || !candidateResumes.some(c => c.text.trim())}>
                     {isEvaluating ? <><Loader2 className="h-5 w-5 animate-spin" /> Evaluating...</> : <>Evaluate All Candidates</>}
                   </Button>
                 </div>

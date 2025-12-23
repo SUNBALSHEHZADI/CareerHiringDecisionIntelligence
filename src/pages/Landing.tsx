@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { memo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -8,17 +9,15 @@ import {
   FileText, 
   Brain, 
   CheckCircle2, 
-  TrendingUp,
-  MessageSquare,
-  ArrowRight,
-  Users,
   GraduationCap,
   Briefcase,
   Shield,
   BarChart3,
-  Zap
+  Zap,
+  ArrowRight
 } from "lucide-react";
 import { saveUserMode } from "@/lib/storage";
+import { HeroIllustration } from "@/components/HeroIllustration";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -70,40 +69,52 @@ const Landing = () => {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-20 lg:py-28">
+        <section className="relative overflow-hidden py-16 lg:py-24">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
+            <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+              <div className="text-center lg:text-left">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent-foreground text-sm font-medium mb-6">
+                    <Brain className="h-4 w-4" />
+                    Career & Hiring Decision Intelligence
+                  </span>
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
+                >
+                  Hiring Decisions
+                  <br />
+                  <span className="text-gradient">Powered by Evidence.</span>
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0"
+                >
+                  One job role, one resume → objective readiness decision.
+                  No hallucinated skills. No hidden logic. Full transparency.
+                </motion.p>
+              </div>
+
+              {/* Hero Illustration */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="hidden lg:block"
               >
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
-                  <Brain className="h-4 w-4" />
-                  Career & Hiring Decision Intelligence
-                </span>
+                <HeroIllustration />
               </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
-              >
-                Hiring Decisions
-                <br />
-                <span className="text-gradient">Powered by Evidence.</span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
-              >
-                One job role, one resume → objective readiness decision.
-                No hallucinated skills. No hidden logic. Full transparency.
-              </motion.p>
             </div>
           </div>
 
