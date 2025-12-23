@@ -12,14 +12,14 @@ export function ScoreRing({ score, size = 160, strokeWidth = 12 }: ScoreRingProp
   const offset = circumference - (score / 100) * circumference;
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-success";
-    if (score >= 50) return "text-warning";
+    if (score >= 75) return "text-success";
+    if (score >= 60) return "text-warning";
     return "text-danger";
   };
 
   const getStrokeColor = (score: number) => {
-    if (score >= 70) return "stroke-success";
-    if (score >= 50) return "stroke-warning";
+    if (score >= 75) return "stroke-success";
+    if (score >= 60) return "stroke-warning";
     return "stroke-danger";
   };
 
