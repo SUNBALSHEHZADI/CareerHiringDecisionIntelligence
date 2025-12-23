@@ -1,4 +1,3 @@
-import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
@@ -17,7 +16,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { saveUserMode } from "@/lib/storage";
-import { HeroIllustration } from "@/components/HeroIllustration";
+import heroImage from "@/assets/hero-career.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -106,14 +105,18 @@ const Landing = () => {
                 </motion.p>
               </div>
 
-              {/* Hero Illustration */}
+              {/* Hero Image */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="hidden lg:block"
               >
-                <HeroIllustration />
+                <img 
+                  src={heroImage} 
+                  alt="AI-powered career matching visualization" 
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl"
+                />
               </motion.div>
             </div>
           </div>
